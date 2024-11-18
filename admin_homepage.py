@@ -1068,7 +1068,9 @@ class AdminHomepage(ctk.CTkFrame):
                 description = self.description_var.get("1.0", "end-1c").strip()
                 
                 try:
-                    copies = int(self.copies_var.get().strip())
+                    if int(self.copies_var.get().strip())<=0:
+                        raise ValueError
+                    copies =  int(self.copies_var.get().strip())
                 except ValueError:
                     messagebox.showerror("Error", "Number of copies must be a valid number!")
                     return
