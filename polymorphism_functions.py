@@ -572,8 +572,8 @@ def save_book_changes(item,book_id, book, photo_frame, name_var, author_var,desc
                 raise ValueError("Description cannot be empty")
             
             
-            if not new_copies or not new_copies.strip():
-                raise ValueError("Available copies cannot be empty")
+            if not new_copies or not new_copies.strip() or int(new_copies.strip())<=0:
+                raise ValueError("Available copies is not valid")
             
     
                 
