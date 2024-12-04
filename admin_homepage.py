@@ -1197,7 +1197,7 @@ class AdminHomepage(ctk.CTkFrame):
         menu.configure(bg=self.COLORS['white'], fg=self.COLORS['text_primary'])
         
         menu.add_command(
-            label="View Information", 
+            label="Edit User Information", 
             command=lambda: self.perform_user_action('edit', user_id)
         )
         menu.add_command(
