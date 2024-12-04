@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 from math import pi
 import re
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from logout_page import LoginPage
 import numpy as np
 
 class AdminHomepage(ctk.CTkFrame):  
@@ -1838,6 +1837,7 @@ class AdminHomepage(ctk.CTkFrame):
             self.close_database()
             messagebox.showinfo("Success", "Logout Successful!")
             self.master.destroy()
+            from login_page import LoginPage
             next=LoginPage()
             next.mainloop()
         except Exception as e:
