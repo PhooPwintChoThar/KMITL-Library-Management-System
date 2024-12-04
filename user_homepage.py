@@ -21,7 +21,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import datetime, timedelta
 import numpy as np
-from logout_page import LoginPage
 from polymorphism_functions import close_database as cdb, edit_user_information as show_info, show_default_profile_photo as show_default
 
 
@@ -302,14 +301,15 @@ class UserHomepage(ctk.CTkFrame):
         
         # Menu items with icons only
         menu_items = [
-            ("📚", "borrowed", "Borrowed Books"),
-            ("📋", "history", "Activity History"),
-            ("📊", "statistics", "Book Statistics"),
-            ("📧", "contact", "Contact Us"),
-            ("↪️", "logout", "Log Out"),
-            ("❌", "exit", "Exit")
-        ]
-        
+        ("📚", "borrowed", "Borrowed Books"),
+        ("📋", "history", "Activity History"),
+        ("📊", "statistics", "Book Statistics"),
+        ("🔑", "password", "Change Password"),  # Add this line
+        ("📧", "contact", "Contact Us"),
+        ("↪️", "logout", "Log Out"),
+        ("❌", "exit", "Exit")
+    ]
+            
         for icon, command, tooltip_text in menu_items:
             btn = ctk.CTkButton(
                 self.sidebar,
@@ -1064,6 +1064,7 @@ class UserHomepage(ctk.CTkFrame):
             self.close_database()
             messagebox.showinfo("Success", "Logout Successful!")
             self.master.destroy()
+            from login_page import LoginPage
             next=LoginPage()
             next.mainloop()
         except Exception as e:
@@ -1080,16 +1081,15 @@ class UserHomepage(ctk.CTkFrame):
     def menu_click(self, item):
         """Handle menu item clicks for user interface"""
         if item == "borrowed":
-            # Show currently borrowed books
             self.show_borrowed_books()
         elif item == "history":
-            # Show borrowing history
             self.show_activity_history()
         elif item == "statistics":
-            # Show reading statistics
             self.show_book_statistics()
-        elif item=="contact":
+        elif item == "contact":
             self.contact()
+        elif item == "password":
+            self.change_password()
         elif item == "logout":
             if messagebox.askyesno("Exit", "Are you sure you want to exit?"):
                 self.logout()
@@ -1097,6 +1097,129 @@ class UserHomepage(ctk.CTkFrame):
             if messagebox.askyesno("Exit", "Are you sure you want to exit?"):
                 self.destroy()
                 self.master.destroy()
+
+    def change_password(self):
+        """Show password change dialog"""
+        dialog = ctk.CTkToplevel()
+        dialog.title("Change Password")
+        dialog.transient(self)
+        dialog.grab_set()
+        dialog.focus_force()
+        dialog.lift()
+        
+        # Center window
+        width, height = 400, 350
+        x = (self.winfo_screenwidth() - width) // 2
+        y = (self.winfo_screenheight() - height) // 2
+        dialog.geometry(f"{width}x{height}+{x}+{y}")
+        dialog.resizable(False, False)
+        
+        # Header frame with blue background
+        header = ctk.CTkFrame(dialog, fg_color=COLORS['primary'], height=60)
+        header.pack(fill="x")
+        header.pack_propagate(False)
+        
+        ctk.CTkLabel(
+            header,
+            text="Change Password",
+            font=("Arial Bold", 20),
+            text_color=COLORS['white']
+        ).pack(pady=15)
+        
+        # Content frame
+        content = ctk.CTkFrame(dialog, fg_color=COLORS['white'])
+        content.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        # Password entries
+        old_pass = ctk.CTkEntry(
+            content,
+            placeholder_text="Current Password",
+            show="•",
+            width=300,
+            height=40,
+            border_color=COLORS['border']
+        )
+        old_pass.pack(pady=10)
+        
+        new_pass = ctk.CTkEntry(
+            content,
+            placeholder_text="New Password",
+            show="•",
+            width=300,
+            height=40,
+            border_color=COLORS['border']
+        )
+        new_pass.pack(pady=10)
+        
+        confirm_pass = ctk.CTkEntry(
+            content,
+            placeholder_text="Confirm New Password",
+            show="•",
+            width=300,
+            height=40,
+            border_color=COLORS['border']
+        )
+        confirm_pass.pack(pady=10)
+        
+        # Error label
+        error_label = ctk.CTkLabel(
+            content,
+            text="",
+            text_color="red",
+            font=("Arial", 12)
+        )
+        error_label.pack(pady=10)
+        
+        def validate_and_change():
+            old = old_pass.get()
+            new = new_pass.get()
+            confirm = confirm_pass.get()
+            
+            if not all([old, new, confirm]):
+                error_label.configure(text="Please fill in all fields")
+                return
+                
+            if new != confirm:
+                error_label.configure(text="New passwords do not match")
+                return
+                
+            try:
+                user = self.dbroot.users[self.user_id]
+                if user.verify_password(old):
+                    user.set_password(new)
+                    transaction.commit()
+                    dialog.destroy()
+                    messagebox.showinfo("Success", "Password changed successfully!")
+                else:
+                    error_label.configure(text="Current password is incorrect")
+            except Exception as e:
+                error_label.configure(text=f"Error: {str(e)}")
+                transaction.abort()
+        
+        # Buttons frame
+        button_frame = ctk.CTkFrame(content, fg_color=COLORS['white'], height=50)
+        button_frame.pack(fill="x", side="bottom")
+        
+        ctk.CTkButton(
+            button_frame,
+            text="Cancel",
+            fg_color=COLORS['secondary'],
+            text_color=COLORS['text_primary'],
+            hover_color=COLORS['hover'],
+            command=dialog.destroy,
+            width=120,
+            height=40
+        ).pack(side="left", padx=20)
+        
+        ctk.CTkButton(
+            button_frame,
+            text="Change",
+            fg_color=COLORS['primary'],
+            hover_color=COLORS['primary_dark'],
+            command=validate_and_change,
+            width=120,
+            height=40
+        ).pack(side="right", padx=20)
 
     def show_activity_history(self):
         """Show user's activity history in a chronological order"""
@@ -1715,7 +1838,7 @@ class UserHomepage(ctk.CTkFrame):
         book = self.dbroot.books[book_data['isbn']]
         user = self.dbroot.users[self.user_id] 
         if user.points<=0:
-            messagebox.showinfo("Ineligible", f"Due to the late return of books on five occasions, your points are insufficient. Please contact staff to pay the fine and refill your point")
+            messagebox.showinfo("Ineligible", f"Due to the late return of books, your points are insufficient. Please contact staff to pay the fine and refill your point")
         elif len(user.borrowed_books)>=5:
             messagebox.showinfo("Ineligible", f"You cannot borrow more than 5 books without returning the ones you currently have.")
         elif not book_data['isbn'] in user.borrowed_books:
