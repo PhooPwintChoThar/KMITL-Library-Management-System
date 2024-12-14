@@ -11,7 +11,7 @@ import ZODB.FileStorage
 import BTrees
 import transaction
 from  library_management import ReturnRecord,BorrowRecord, Book, User
-from polymorphism_functions import edit_user_information as edit_user, edit_book_information as edit_book
+from common_functions import edit_user_information as edit_user, edit_book_information as edit_book
 from datetime import datetime
 import matplotlib.pyplot as plt
 from math import pi
