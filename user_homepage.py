@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import datetime, timedelta
 import numpy as np
-from polymorphism_functions import close_database as cdb, edit_user_information as show_info, show_default_profile_photo as show_default
+from common_functions import close_database as cdb, edit_user_information as show_info, show_default_profile_photo as show_default
 
 
 # Define color scheme
